@@ -1,0 +1,11 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="market"
+version="1.0"
+displayName="Market"
+description='''
+Market economy mod
+'''
