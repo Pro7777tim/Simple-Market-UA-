@@ -37,7 +37,7 @@ public class MarketTicker {
             MarketStateManager.save();
         }
 
-        if (ticks < /*1200*/ 120)
+        if (ticks < 1200)
             return;
 
         ticks = 0;
