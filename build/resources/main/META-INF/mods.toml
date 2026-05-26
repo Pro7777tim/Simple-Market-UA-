@@ -1,11 +1,11 @@
 modLoader="javafml"
 loaderVersion="[47,)"
-license="MIT"
+license="GPL3"
 
 [[mods]]
 modId="market"
-version="1.0"
+version="2.0"
 displayName="Market"
 description='''
-Market economy mod
+A simple mod that simulates a market/exchange/economy
 '''

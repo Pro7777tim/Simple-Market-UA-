@@ -34,7 +34,16 @@ public class MarketEvents {
 
                 event.getToolTip().add(
                         Component.literal(
-                                "Ціна продажу: $" + MarketManager.getPriceWithDemand(entry.getPrice())
+                                "Ціна продажу: $" + (int) Math.round(
+                                        entry.getPrice()
+                                                + (
+                                                entry.getPrice()
+                                                        * (
+                                                        ClientMarketState.SELL_DEMAND
+                                                                / 100.0
+                                                )
+                                        )
+                                )
                         ).withStyle(
                                 ChatFormatting.GOLD,
                                 ChatFormatting.ITALIC
@@ -56,7 +65,16 @@ public class MarketEvents {
 
                 event.getToolTip().add(
                         Component.literal(
-                                "Ціна купівлі: $" + MarketManager.getBuyPriceWithDemand(buyEntry.getPrice())
+                                "Ціна купівлі: $" + (int) Math.round(
+                                        buyEntry.getPrice()
+                                                + (
+                                                buyEntry.getPrice()
+                                                        * (
+                                                        ClientMarketState.BUY_DEMAND
+                                                                / 100.0
+                                                )
+                                        )
+                                )
                         ).withStyle(
                                 ChatFormatting.GOLD,
                                 ChatFormatting.ITALIC

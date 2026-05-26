@@ -4,6 +4,7 @@ import me.pro777.market.command.MarketCommand;
 import me.pro777.market.config.MarketConfig;
 
 import me.pro777.market.market.MarketManager;
+import me.pro777.market.market.MarketNetwork;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegisterCommandsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -26,6 +27,8 @@ public class MarketMod {
         );
 
         MinecraftForge.EVENT_BUS.register(this);
+
+        MarketNetwork.register();
 
         MarketManager.load();
         PlayerBalanceManager.load();

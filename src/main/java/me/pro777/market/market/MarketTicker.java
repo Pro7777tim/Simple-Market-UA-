@@ -1,12 +1,14 @@
 package me.pro777.market.market;
 
 import me.pro777.market.config.MarketConfig;
+import me.pro777.market.network.SyncDemandPacket;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.network.PacketDistributor;
 
 import java.util.Random;
 
@@ -49,12 +51,10 @@ public class MarketTicker {
             MarketStateManager.save();
         }
 
-        if (ticks < 1200)
+        if (ticks < /*1200*/ 120)
             return;
 
         ticks = 0;
-
-        int oldSellDemand = sellDemand;
 
         if (MarketManager.SOLD_THIS_MINUTE <= 0) {
 
@@ -84,19 +84,7 @@ public class MarketTicker {
 
         MarketStateManager.SELL_DEMAND = sellDemand;
 
-        if (oldSellDemand != sellDemand) {
-
-            broadcast(
-                    sellDemand > oldSellDemand,
-                    oldSellDemand,
-                    sellDemand,
-                    event.getServer()
-            );
-        }
-
         MarketManager.SOLD_THIS_MINUTE = 0;
-
-        int oldBuyDemand = buyDemand;
 
         if (MarketManager.BOUGHT_THIS_MINUTE <= 0) {
 
@@ -124,104 +112,29 @@ public class MarketTicker {
 
         MarketStateManager.BUY_DEMAND = buyDemand;
 
-        if (oldBuyDemand != buyDemand) {
+        event.getServer().getPlayerList().getPlayers().forEach(player -> {
 
-            buyBroadcast(
-                    event.getServer(),
-                    buyDemand > oldBuyDemand,
-                    oldBuyDemand,
-                    buyDemand
-            );
-        }
+            if (
+                    player.containerMenu instanceof net.minecraft.world.inventory.ChestMenu menu
+            ) {
+
+                MarketManager.updateMarketInfo(
+                        menu,
+                        player
+                );
+            }
+        });
+
+        MarketNetwork.CHANNEL.send(
+
+                PacketDistributor.ALL.noArg(),
+
+                new SyncDemandPacket(
+                        sellDemand,
+                        buyDemand
+                )
+        );
 
         MarketManager.BOUGHT_THIS_MINUTE = 0;
-    }
-
-    private static void broadcast(
-            boolean up,
-            int oldDemand,
-            int newDemand,
-            net.minecraft.server.MinecraftServer server
-    ) {
-
-        server.getPlayerList()
-                .broadcastSystemMessage(
-
-                        Component.literal("Продаж")
-                                .withStyle(ChatFormatting.RED)
-
-                                .append(
-                                        Component.literal(" | Ціни на ринку ")
-                                                .withStyle(ChatFormatting.WHITE)
-                                )
-
-                                .append(
-                                        Component.literal(
-                                                up ? "зросли" : "впали"
-                                        ).withStyle(
-                                                up
-                                                        ? ChatFormatting.GREEN
-                                                        : ChatFormatting.RED
-                                        )
-                                )
-
-                                .append(
-                                        Component.literal(" ")
-                                                .withStyle(ChatFormatting.WHITE)
-                                )
-
-                                .append(
-                                        Component.literal(
-                                                (oldDemand + 100) + "% -> "
-                                                        + (newDemand + 100) + "%"
-                                        ).withStyle(ChatFormatting.YELLOW)
-                                ),
-
-                        false
-                );
-    }
-
-    private static void buyBroadcast(
-            net.minecraft.server.MinecraftServer server,
-            boolean up,
-            int oldDemand,
-            int newDemand
-    ) {
-
-        server.getPlayerList()
-                .broadcastSystemMessage(
-
-                        Component.literal("Купівля")
-                                .withStyle(ChatFormatting.GREEN)
-
-                                .append(
-                                        Component.literal(" | Ціни на ринку ")
-                                                .withStyle(ChatFormatting.WHITE)
-                                )
-
-                                .append(
-                                        Component.literal(
-                                                up ? "зросли" : "впали"
-                                        ).withStyle(
-                                                up
-                                                        ? ChatFormatting.RED
-                                                        : ChatFormatting.GREEN
-                                        )
-                                )
-
-                                .append(
-                                        Component.literal(" ")
-                                                .withStyle(ChatFormatting.WHITE)
-                                )
-
-                                .append(
-                                        Component.literal(
-                                                (oldDemand + 100) + "% -> "
-                                                        + (newDemand + 100) + "%"
-                                        ).withStyle(ChatFormatting.YELLOW)
-                                ),
-
-                        false
-                );
     }
 }

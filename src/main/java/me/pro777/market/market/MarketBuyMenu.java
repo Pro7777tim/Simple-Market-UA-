@@ -92,24 +92,9 @@ public class MarketBuyMenu {
 
                             MarketManager.buy(serverPlayer, entry);
 
-                            ItemStack moneyStack =
-                                    new ItemStack(Items.GOLD_INGOT);
-
-                            moneyStack.getOrCreateTag().putBoolean(
-                                    "technical",
-                                    true
-                            );
-
-                            moneyStack.setHoverName(
-                                    Component.literal(
-                                            "Ваший поточний баланс: $" + PlayerBalanceManager.getMoney(serverPlayer)
-                                    ).withStyle(
-                                            ChatFormatting.GOLD
-                                    )
-                            );
-
-                            this.slots.get(49).setByPlayer(
-                                    moneyStack
+                            MarketManager.updateMarketInfo(
+                                    this,
+                                    serverPlayer
                             );
                         }
                     }

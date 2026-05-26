@@ -417,9 +417,45 @@ public class MarketManager {
         );
 
         container.setItem(
-                49,
+                50,
                 moneyStack
         );
+
+        ItemStack sellDemand =
+                new ItemStack(Items.RED_SHULKER_BOX);
+
+        sellDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        sellDemand.setHoverName(
+                Component.literal(
+                        "Попит продажу: "
+                                + (MarketStateManager.SELL_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        container.setItem(48, sellDemand);
+
+        ItemStack buyDemand =
+                new ItemStack(Items.LIME_SHULKER_BOX);
+
+        buyDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        buyDemand.setHoverName(
+                Component.literal(
+                        "Попит купівлі: "
+                                + (MarketStateManager.BUY_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        container.setItem(49, buyDemand);
 
         return container;
     }
@@ -496,10 +532,111 @@ public class MarketManager {
         );
 
         container.setItem(
-                49,
+                50,
                 moneyStack
         );
 
+        ItemStack sellDemand =
+                new ItemStack(Items.RED_SHULKER_BOX);
+
+        sellDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        sellDemand.setHoverName(
+                Component.literal(
+                        "Попит продажу: "
+                                + (MarketStateManager.SELL_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        container.setItem(48, sellDemand);
+
+        ItemStack buyDemand =
+                new ItemStack(Items.LIME_SHULKER_BOX);
+
+        buyDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        buyDemand.setHoverName(
+                Component.literal(
+                        "Попит купівлі: "
+                                + (MarketStateManager.BUY_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        container.setItem(49, buyDemand);
+
         return container;
+    }
+
+    public static void updateMarketInfo(
+            net.minecraft.world.inventory.ChestMenu menu,
+            ServerPlayer player
+    ) {
+
+        ItemStack sellDemand =
+                new ItemStack(Items.RED_SHULKER_BOX);
+
+        sellDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        sellDemand.setHoverName(
+                Component.literal(
+                        "Попит продажу: "
+                                + (MarketStateManager.SELL_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        menu.slots.get(48).setByPlayer(
+                sellDemand
+        );
+
+        ItemStack buyDemand =
+                new ItemStack(Items.LIME_SHULKER_BOX);
+
+        buyDemand.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        buyDemand.setHoverName(
+                Component.literal(
+                        "Попит купівлі: "
+                                + (MarketStateManager.BUY_DEMAND + 100)
+                                + "%"
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        menu.slots.get(49).setByPlayer(
+                buyDemand
+        );
+
+        ItemStack moneyStack =
+                new ItemStack(Items.GOLD_INGOT);
+
+        moneyStack.getOrCreateTag().putBoolean(
+                "technical",
+                true
+        );
+
+        moneyStack.setHoverName(
+                Component.literal(
+                        "Ваший поточний баланс: $"
+                                + PlayerBalanceManager.getMoney(player)
+                ).withStyle(ChatFormatting.GOLD)
+        );
+
+        menu.slots.get(50).setByPlayer(
+                moneyStack
+        );
     }
 }
