@@ -1,6 +1,7 @@
 package me.pro777.market.market;
 
 import me.pro777.market.config.MarketConfig;
+import me.pro777.market.network.SyncDemandPacket;
 import net.minecraft.server.MinecraftServer;
 
 import net.minecraft.ChatFormatting;
@@ -12,6 +13,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 import net.minecraft.world.item.Items;
+import net.minecraftforge.network.PacketDistributor;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.ArrayList;
@@ -24,10 +26,6 @@ public class MarketManager {
     public static final List<SellEntry> BUY_ITEMS = new ArrayList<>();
 
     public static MinecraftServer SERVER;
-
-    public static int SOLD_THIS_MINUTE = 0;
-
-    public static int BOUGHT_THIS_MINUTE = 0;
 
     public static final int ITEMS_PER_PAGE = 45;
 
@@ -76,7 +74,7 @@ public class MarketManager {
 
                 if (item == null) {
                     System.out.println(
-                            "[Market] Невідомий предмет: " + itemId
+                            "[Market] Unknown object: " + itemId
                     );
                 }
 
@@ -121,7 +119,7 @@ public class MarketManager {
 
                 if (item == null) {
                     System.out.println(
-                            "[Market] Невідомий предмет: " + itemId
+                            "[Market] Unknown object: " + itemId
                     );
                 }
 
@@ -179,41 +177,54 @@ public class MarketManager {
         int money = amount * currentPrice;
         int finalMoney = money;
 
-        SOLD_THIS_MINUTE += money;
-
         PlayerBalanceManager.addMoney(
                 player,
                 money
         );
 
+        MarketStateManager.SELL_DEMAND = Math.max(
+                -25,
+                MarketStateManager.SELL_DEMAND
+                        - Math.max(1, money / 50)
+        );
+
+        MarketNetwork.CHANNEL.send(
+
+                PacketDistributor.ALL.noArg(),
+
+                new SyncDemandPacket(
+                        MarketStateManager.SELL_DEMAND,
+                        MarketStateManager.BUY_DEMAND
+                )
+        );
+
+        if (
+                player.containerMenu
+                        instanceof net.minecraft.world.inventory.ChestMenu menu
+        ) {
+
+            updateMarketInfo(
+                    menu,
+                    player
+            );
+        }
+
         player.server.getPlayerList().broadcastSystemMessage(
+                Component.translatable(
+                        "market.player_sell",
+                        Component.literal(
+                                player.getName().getString()
+                        ).withStyle(ChatFormatting.GREEN),
+                        Component.literal(
+                                entry.getItem()
+                                        .getDescription()
+                                        .getString()
+                        ).withStyle(ChatFormatting.YELLOW),
 
-                Component.literal(player.getName().getString())
-                        .withStyle(ChatFormatting.GREEN)
-
-                        .append(
-                                Component.literal(" продав ")
-                                        .withStyle(ChatFormatting.RED)
-                        )
-
-                        .append(
-                                Component.literal(
-                                        entry.getItem()
-                                                .getDescription()
-                                                .getString()
-                                ).withStyle(ChatFormatting.YELLOW)
-                        )
-
-                        .append(
-                                Component.literal(" на суму ")
-                                        .withStyle(ChatFormatting.WHITE)
-                        )
-
-                        .append(
-                                Component.literal("$" + finalMoney)
-                                        .withStyle(ChatFormatting.GREEN)
-                        ),
-
+                        Component.literal(
+                                "$" + finalMoney
+                        ).withStyle(ChatFormatting.GREEN)
+                ),
                 false
         );
     }
@@ -257,7 +268,7 @@ public class MarketManager {
 
                 player.sendSystemMessage(
                         Component.literal(
-                                "Помилка NBT предмета"
+                                "Subject NBT error"
                         ).withStyle(ChatFormatting.RED)
                 );
 
@@ -272,6 +283,33 @@ public class MarketManager {
             return;
         }
 
+        MarketStateManager.BUY_DEMAND = Math.min(
+                25,
+                MarketStateManager.BUY_DEMAND
+                        + Math.max(1, needMoney / 50)
+        );
+
+        MarketNetwork.CHANNEL.send(
+
+                PacketDistributor.ALL.noArg(),
+
+                new SyncDemandPacket(
+                        MarketStateManager.SELL_DEMAND,
+                        MarketStateManager.BUY_DEMAND
+                )
+        );
+
+        if (
+                player.containerMenu
+                        instanceof net.minecraft.world.inventory.ChestMenu menu
+        ) {
+
+            updateMarketInfo(
+                    menu,
+                    player
+            );
+        }
+
         boolean added = player.getInventory().add(giveItem);
 
         if (!added) {
@@ -281,36 +319,25 @@ public class MarketManager {
             );
         }
 
-        BOUGHT_THIS_MINUTE += needMoney;
-
         player.server.getPlayerList().broadcastSystemMessage(
+                Component.translatable(
 
-                Component.literal(player.getName().getString())
-                        .withStyle(ChatFormatting.GREEN)
+                        "market.player_buy",
 
-                        .append(
-                                Component.literal(" купив ")
-                                        .withStyle(ChatFormatting.RED)
-                        )
+                        Component.literal(
+                                player.getName().getString()
+                        ).withStyle(ChatFormatting.GREEN),
 
-                        .append(
-                                Component.literal(
-                                        entry.getItem()
-                                                .getDescription()
-                                                .getString()
-                                ).withStyle(ChatFormatting.YELLOW)
-                        )
+                        Component.literal(
+                                entry.getItem()
+                                        .getDescription()
+                                        .getString()
+                        ).withStyle(ChatFormatting.YELLOW),
 
-                        .append(
-                                Component.literal(" за ")
-                                        .withStyle(ChatFormatting.WHITE)
-                        )
-
-                        .append(
-                                Component.literal("$" + needMoney)
-                                        .withStyle(ChatFormatting.GREEN)
-                        ),
-
+                        Component.literal(
+                                "$" + needMoney
+                        ).withStyle(ChatFormatting.GREEN)
+                ),
                 false
         );
     }
@@ -373,7 +400,7 @@ public class MarketManager {
         if (page > 0) {
             ItemStack arrow =
                     new ItemStack(Items.BLAZE_ROD).setHoverName(
-                            Component.literal("Попередня сторінка")
+                            Component.translatable("market.previous_page")
                                     .withStyle(ChatFormatting.YELLOW)
                     );
 
@@ -388,7 +415,7 @@ public class MarketManager {
         if (end < SELL_ITEMS.size()) {
             ItemStack arrow =
                     new ItemStack(Items.BLAZE_ROD).setHoverName(
-                            Component.literal("Наступна сторінка")
+                            Component.translatable("market.next_page")
                                     .withStyle(ChatFormatting.YELLOW)
                     );
 
@@ -409,8 +436,9 @@ public class MarketManager {
         );
 
         moneyStack.setHoverName(
-                Component.literal(
-                        "Ваший поточний баланс: $" + PlayerBalanceManager.getMoney(player)
+                Component.translatable(
+                        "market.balance",
+                        "$" + PlayerBalanceManager.getMoney(player)
                 ).withStyle(
                         ChatFormatting.GOLD
                 )
@@ -430,10 +458,11 @@ public class MarketManager {
         );
 
         sellDemand.setHoverName(
-                Component.literal(
-                        "Попит продажу: "
-                                + (MarketStateManager.SELL_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.sell_demand",
+                        String.valueOf(
+                                MarketStateManager.SELL_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -448,10 +477,11 @@ public class MarketManager {
         );
 
         buyDemand.setHoverName(
-                Component.literal(
-                        "Попит купівлі: "
-                                + (MarketStateManager.BUY_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.buy_demand",
+                        String.valueOf(
+                                MarketStateManager.BUY_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -488,7 +518,7 @@ public class MarketManager {
         if (page > 0) {
             ItemStack arrow =
                     new ItemStack(Items.BLAZE_ROD).setHoverName(
-                            Component.literal("Попередня сторінка")
+                            Component.translatable("market.previous_page")
                                     .withStyle(ChatFormatting.YELLOW)
                     );
 
@@ -503,9 +533,9 @@ public class MarketManager {
         if (end < BUY_ITEMS.size()) {
             ItemStack arrow =
                     new ItemStack(Items.BLAZE_ROD).setHoverName(
-                    Component.literal("Наступна сторінка")
-                            .withStyle(ChatFormatting.YELLOW)
-            );
+                            Component.translatable("market.next_page")
+                                    .withStyle(ChatFormatting.YELLOW)
+                    );
 
             arrow.getOrCreateTag().putBoolean(
                     "technical",
@@ -524,8 +554,9 @@ public class MarketManager {
         );
 
         moneyStack.setHoverName(
-                Component.literal(
-                        "Ваший поточний баланс: $" + PlayerBalanceManager.getMoney(player)
+                Component.translatable(
+                        "market.balance",
+                        "$" + PlayerBalanceManager.getMoney(player)
                 ).withStyle(
                         ChatFormatting.GOLD
                 )
@@ -545,10 +576,11 @@ public class MarketManager {
         );
 
         sellDemand.setHoverName(
-                Component.literal(
-                        "Попит продажу: "
-                                + (MarketStateManager.SELL_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.sell_demand",
+                        String.valueOf(
+                                MarketStateManager.SELL_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -563,10 +595,11 @@ public class MarketManager {
         );
 
         buyDemand.setHoverName(
-                Component.literal(
-                        "Попит купівлі: "
-                                + (MarketStateManager.BUY_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.buy_demand",
+                        String.valueOf(
+                                MarketStateManager.BUY_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -589,10 +622,11 @@ public class MarketManager {
         );
 
         sellDemand.setHoverName(
-                Component.literal(
-                        "Попит продажу: "
-                                + (MarketStateManager.SELL_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.sell_demand",
+                        String.valueOf(
+                                MarketStateManager.SELL_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -609,10 +643,11 @@ public class MarketManager {
         );
 
         buyDemand.setHoverName(
-                Component.literal(
-                        "Попит купівлі: "
-                                + (MarketStateManager.BUY_DEMAND + 100)
-                                + "%"
+                Component.translatable(
+                        "market.buy_demand",
+                        String.valueOf(
+                                MarketStateManager.BUY_DEMAND + 100
+                        )
                 ).withStyle(ChatFormatting.GOLD)
         );
 
@@ -629,10 +664,12 @@ public class MarketManager {
         );
 
         moneyStack.setHoverName(
-                Component.literal(
-                        "Ваший поточний баланс: $"
-                                + PlayerBalanceManager.getMoney(player)
-                ).withStyle(ChatFormatting.GOLD)
+                Component.translatable(
+                        "market.balance",
+                        "$" + PlayerBalanceManager.getMoney(player)
+                ).withStyle(
+                        ChatFormatting.GOLD
+                )
         );
 
         menu.slots.get(50).setByPlayer(

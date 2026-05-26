@@ -34,7 +34,7 @@ public class MarketCommand {
                                                     new SimpleMenuProvider(
                                                             (id, inv, p) ->
                                                                     MarketMenu.create(id, inv, 0),
-                                                            Component.literal("Продаж")
+                                                            Component.translatable("market.sell_menu")
                                                     )
                                             );
 
@@ -53,7 +53,7 @@ public class MarketCommand {
                                                     new SimpleMenuProvider(
                                                             (id, inv, p) ->
                                                                     MarketBuyMenu.create(id, inv, 0),
-                                                            Component.literal("Купівля")
+                                                            Component.translatable("market.buy_menu")
                                                     )
                                             );
 
@@ -71,14 +71,13 @@ public class MarketCommand {
                                                     PlayerBalanceManager.getMoney(player);
 
                                             player.sendSystemMessage(
-                                                    Component.literal(
-                                                            "Ваш баланс: "
-                                                    )
-                                                            .withStyle(ChatFormatting.YELLOW)
-                                                            .append(
-                                                                    Component.literal("$" + money)
-                                                                            .withStyle(ChatFormatting.GREEN)
-                                                            )
+
+                                                    Component.translatable(
+                                                            "market.balance",
+                                                            Component.literal("$" + money)
+                                                                    .withStyle(ChatFormatting.GREEN)
+
+                                                    ).withStyle(ChatFormatting.YELLOW)
                                             );
 
                                             return 1;
@@ -125,8 +124,8 @@ public class MarketCommand {
                                                                             if (sender == target) {
 
                                                                                 sender.sendSystemMessage(
-                                                                                        Component.literal(
-                                                                                                "Не можна переказати гроші самому собі"
+                                                                                        Component.translatable(
+                                                                                                "market.transfer_money_yourself"
                                                                                         ).withStyle(
                                                                                                 ChatFormatting.RED
                                                                                         )
@@ -138,8 +137,8 @@ public class MarketCommand {
                                                                             if (senderMoney < money) {
 
                                                                                 sender.sendSystemMessage(
-                                                                                        Component.literal(
-                                                                                                "Недостатньо грошей"
+                                                                                        Component.translatable(
+                                                                                                "market.not_enough_money"
                                                                                         ).withStyle(
                                                                                                 ChatFormatting.RED
                                                                                         )
@@ -159,32 +158,20 @@ public class MarketCommand {
                                                                             );
 
                                                                             sender.server.getPlayerList().broadcastSystemMessage(
-
-                                                                                    Component.literal(
+                                                                                    Component.translatable(
+                                                                                            "market.transfer",
+                                                                                            Component.literal(
                                                                                                     sender.getName().getString()
+                                                                                            ).withStyle(ChatFormatting.GREEN),
+
+                                                                                            Component.literal(
+                                                                                                    "$" + money
+                                                                                            ).withStyle(ChatFormatting.GREEN),
+
+                                                                                            Component.literal(
+                                                                                                    target.getName().getString()
                                                                                             ).withStyle(ChatFormatting.GREEN)
-
-                                                                                            .append(
-                                                                                                    Component.literal(" переказав ")
-                                                                                                            .withStyle(ChatFormatting.RED)
-                                                                                            )
-
-                                                                                            .append(
-                                                                                                    Component.literal("$" + money)
-                                                                                                            .withStyle(ChatFormatting.GREEN)
-                                                                                            )
-
-                                                                                            .append(
-                                                                                                    Component.literal(" на рахунок ")
-                                                                                                            .withStyle(ChatFormatting.WHITE)
-                                                                                            )
-
-                                                                                            .append(
-                                                                                                    Component.literal(
-                                                                                                            target.getName().getString()
-                                                                                                    ).withStyle(ChatFormatting.GREEN)
-                                                                                            ),
-
+                                                                                    ),
                                                                                     false
                                                                             );
 
@@ -218,8 +205,8 @@ public class MarketCommand {
                                             MarketManager.load();
 
                                             ctx.getSource().sendSuccess(
-                                                    () -> Component.literal(
-                                                            "Market конфіг перезавантажено"
+                                                    () -> Component.translatable(
+                                                            "market.reload_config"
                                                     ).withStyle(
                                                             ChatFormatting.GREEN
                                                     ),

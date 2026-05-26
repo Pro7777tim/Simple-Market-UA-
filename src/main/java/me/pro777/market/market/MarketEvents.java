@@ -33,14 +33,17 @@ public class MarketEvents {
             if (stack.getItem() == entry.getItem()) {
 
                 event.getToolTip().add(
-                        Component.literal(
-                                "Ціна продажу: $" + (int) Math.round(
-                                        entry.getPrice()
-                                                + (
+                        Component.translatable(
+                                "market.sell_price",
+                                String.valueOf(
+                                        (int) Math.round(
                                                 entry.getPrice()
-                                                        * (
-                                                        ClientMarketState.SELL_DEMAND
-                                                                / 100.0
+                                                        + (
+                                                        entry.getPrice()
+                                                                * (
+                                                                ClientMarketState.SELL_DEMAND
+                                                                        / 100.0
+                                                        )
                                                 )
                                         )
                                 )
@@ -50,8 +53,9 @@ public class MarketEvents {
                         )
                 );
                 event.getToolTip().add(
-                        Component.literal(
-                                "Початкова ціна продажу: $" + entry.getPrice()
+                        Component.translatable(
+                                "market.base_sell_price",
+                                String.valueOf(entry.getPrice())
                         ).withStyle(ChatFormatting.GRAY)
                 );
 
@@ -64,14 +68,17 @@ public class MarketEvents {
             if (buyEntry.getItem() == stack.getItem()) {
 
                 event.getToolTip().add(
-                        Component.literal(
-                                "Ціна купівлі: $" + (int) Math.round(
-                                        buyEntry.getPrice()
-                                                + (
+                        Component.translatable(
+                                "market.buy_price",
+                                String.valueOf(
+                                        (int) Math.round(
                                                 buyEntry.getPrice()
-                                                        * (
-                                                        ClientMarketState.BUY_DEMAND
-                                                                / 100.0
+                                                        + (
+                                                        buyEntry.getPrice()
+                                                                * (
+                                                                ClientMarketState.BUY_DEMAND
+                                                                        / 100.0
+                                                        )
                                                 )
                                         )
                                 )
@@ -81,8 +88,9 @@ public class MarketEvents {
                         )
                 );
                 event.getToolTip().add(
-                        Component.literal(
-                                "Початкова ціна купівлі: $" + buyEntry.getPrice()
+                        Component.translatable(
+                                "market.base_buy_price",
+                                String.valueOf(buyEntry.getPrice())
                         ).withStyle(ChatFormatting.GRAY)
                 );
 

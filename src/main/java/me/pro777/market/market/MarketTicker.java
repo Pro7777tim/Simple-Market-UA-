@@ -19,12 +19,6 @@ public class MarketTicker {
 
     private static int saveTicks = 0;
 
-    private static boolean loaded = false;
-
-    private static int sellDemand = 0;
-
-    private static int buyDemand = 0;
-
     private static final Random RANDOM = new Random();
 
     @SubscribeEvent
@@ -32,14 +26,6 @@ public class MarketTicker {
 
         if (event.phase != TickEvent.Phase.END)
             return;
-
-        if (!loaded) {
-
-            sellDemand = MarketStateManager.SELL_DEMAND;
-            buyDemand = MarketStateManager.BUY_DEMAND;
-
-            loaded = true;
-        }
 
         ticks++;
         saveTicks++;
@@ -56,61 +42,20 @@ public class MarketTicker {
 
         ticks = 0;
 
-        if (MarketManager.SOLD_THIS_MINUTE <= 0) {
+        int increase = RANDOM.nextInt(3) + 1;
 
-            int increase = RANDOM.nextInt(5) + 1;
+        MarketStateManager.SELL_DEMAND = Math.min(
+                25,
+                MarketStateManager.SELL_DEMAND + increase
+        );
 
-            sellDemand = Math.min(
-                    50,
-                    sellDemand + increase
-            );
-        }
 
-        else {
+        int buyIncrease = RANDOM.nextInt(3) + 1;
 
-            int decrease = Math.max(
-                    1,
-                    Math.min(
-                            500,
-                            MarketManager.SOLD_THIS_MINUTE / 20
-                    )
-            );
-
-            sellDemand = Math.max(
-                    -50,
-                    sellDemand - decrease
-            );
-        }
-
-        MarketStateManager.SELL_DEMAND = sellDemand;
-
-        MarketManager.SOLD_THIS_MINUTE = 0;
-
-        if (MarketManager.BOUGHT_THIS_MINUTE <= 0) {
-
-            int increase = RANDOM.nextInt(5) + 1;
-
-            buyDemand = Math.max(
-                    -50,
-                    buyDemand - increase
-            );
-        }
-        else {
-            int increase = Math.max(
-                    1,
-                    Math.min(
-                            500,
-                            MarketManager.BOUGHT_THIS_MINUTE / 20
-                    )
-            );
-
-            buyDemand = Math.min(
-                    50,
-                    buyDemand + increase
-            );
-        }
-
-        MarketStateManager.BUY_DEMAND = buyDemand;
+        MarketStateManager.BUY_DEMAND = Math.max(
+                -25,
+                MarketStateManager.BUY_DEMAND - buyIncrease
+        );
 
         event.getServer().getPlayerList().getPlayers().forEach(player -> {
 
@@ -130,11 +75,9 @@ public class MarketTicker {
                 PacketDistributor.ALL.noArg(),
 
                 new SyncDemandPacket(
-                        sellDemand,
-                        buyDemand
+                        MarketStateManager.SELL_DEMAND,
+                        MarketStateManager.BUY_DEMAND
                 )
         );
-
-        MarketManager.BOUGHT_THIS_MINUTE = 0;
     }
 }
