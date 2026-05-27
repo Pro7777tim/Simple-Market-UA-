@@ -2,12 +2,12 @@
 
 # _English_
 
-A simple Minecraft Forge mod in Ukrainian that simulates a market/exchange/economy
+A simple Minecraft Forge mod that simulates a market/exchange/economy
 
 ## Additional information
 * Version - minecraft 1.20.1 forge
 * License - GPL_3
-* Language - Ukrainian
+* Language - English, Ukrainian
 * Environment - client/server (required)
 
 ## Features
@@ -31,12 +31,12 @@ I created this mod for my own use, but I decided to publish it. Updates will be 
 
 # _Ukrainian_
 
-Простий minecraft forge мод на українській мові, який емулює ринок/біржу/економіку
+Простий minecraft forge мод, який емулює ринок/біржу/економіку
 
 ## Додаткова інформація
 * Версія - minecraft 1.20.1 forge
 * Ліцензія - GPL_3
-* Мова - українська
+* Мова - Англійська, Українська
 * Середовище існування - клієнт/сервер (обов'язково)
 
 ## Функціонал
